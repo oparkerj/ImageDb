@@ -22,6 +22,7 @@ static IEnumerable<(string Usage, Type Type)> AllActions()
     yield return Add<UseAll>();
     yield return Add<RemoveUse>();
     yield return Add<Insert>();
+    yield return Add<InsertDir>();
     yield return Add<Choose>();
     yield return Add<ShowUsed>();
 }
