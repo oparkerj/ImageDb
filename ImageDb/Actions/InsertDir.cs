@@ -39,7 +39,7 @@ public class InsertDir : ActionBase, IActionUsage
             SafeAdd(moved);
         }
         
-        foreach (var file in Directory.GetFiles(dir))
+        foreach (var file in Directory.GetFiles(dir).Order(new CountOrder()))
         {
             Console.WriteLine($"Checking: {file}");
             var (path, difference) = Tree.LookupDistance(TreePath(file));
