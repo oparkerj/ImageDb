@@ -8,7 +8,7 @@
 /// </summary>
 public class InsertDir : ActionBase, IActionUsage
 {
-    public static string Usage => "insertDir <dir> <autoAcceptTolerance>";
+    public static string Usage => "insertDir <dir> <autoAcceptTolerance> [autoDenyTolerance]";
     
     public InsertDir(ArgReader args) : base(args) { }
     
@@ -33,6 +33,14 @@ public class InsertDir : ActionBase, IActionUsage
             return;
         }
 
+        int autoDeny;
+        if (!TryGetArg(2, out autoDeny)) autoDeny = -1;
+        if (autoDeny >= tolerance)
+        {
+            Console.WriteLine("Auto-deny must be less than tolerance.");
+            return;
+        }
+
         void Add(string file)
         {
             var moved = this.MoveFileToDir(file);
@@ -43,7 +51,12 @@ public class InsertDir : ActionBase, IActionUsage
         {
             Console.WriteLine($"Checking: {file}");
             var (path, difference) = Tree.LookupDistance(TreePath(file));
-            if (difference >= tolerance)
+            if (difference <= autoDeny)
+            {
+                Console.WriteLine($"Distance: {difference}");
+                Console.WriteLine("Skipping");
+            }
+            else if (difference >= tolerance)
             {
                 Console.WriteLine($"Distance: {difference}");
                 Add(file);
