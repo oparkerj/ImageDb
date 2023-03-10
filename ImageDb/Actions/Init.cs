@@ -21,7 +21,6 @@ public class Init : ActionBase, IActionUsage
         var used = this.LoadUseFile();
         used ??= new HashSet<string>();
         this.WriteUseFile(used);
-        var dir = this.GetFolderOption();
-        Directory.CreateDirectory(dir);
+        Directory.CreateDirectory(ImageDirPath);
     }
 }

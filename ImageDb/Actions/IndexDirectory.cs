@@ -26,7 +26,6 @@ public class IndexDirectory : ActionBase, IActionUsage
         }
         
         Console.WriteLine("Indexing directory...");
-        LoadTree();
         foreach (var file in Directory.EnumerateFiles(dir))
         {
             var add = this.MoveFileToDir(file);

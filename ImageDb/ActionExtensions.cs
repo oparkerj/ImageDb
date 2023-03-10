@@ -13,7 +13,7 @@ public static class ActionExtensions
     /// <returns>Used files.</returns>
     public static HashSet<string> LoadUseFile(this ActionBase action)
     {
-        var useFile = action.Args.GetOption("usefile") ?? action.Config.UsageFile; 
+        var useFile = action.UseFile;
         return action.Data.ReadGZipped<HashSet<string>>(useFile);
     }
 
@@ -24,21 +24,10 @@ public static class ActionExtensions
     /// <param name="used">Used files.</param>
     public static void WriteUseFile(this ActionBase action, HashSet<string> used)
     {
-        var useFile = action.Args.GetOption("usefile") ?? action.Config.UsageFile; 
+        var useFile = action.UseFile; 
         action.Data.WriteGZipped(used, useFile, action.Args.HasOption(ShowJson.Usage));
     }
 
-    /// <summary>
-    /// Get the path to the configured image folder.
-    /// This can be overridden with the --folder option.
-    /// </summary>
-    /// <param name="action"></param>
-    /// <returns></returns>
-    public static string GetFolderOption(this ActionBase action)
-    {
-        return action.Args.GetOption("folder") ?? action.Config.ImageFolder;
-    }
-    
     /// <summary>
     /// Move the given file to the configured image folder.
     /// The file will be renamed according to the configured file name format.
@@ -50,7 +39,7 @@ public static class ActionExtensions
     /// <returns>Path to the moved and renamed file.</returns>
     public static string MoveFileToDir(this ActionBase action, string file)
     {
-        var dir = action.GetFolderOption();
+        var dir = action.ImageDirPath;
         var ext = Path.GetExtension(file);
         var name = Use.NextFileName(dir, action.Config.NameFormat);
         name = name.Replace("{ext}", ext);

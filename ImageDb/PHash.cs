@@ -62,7 +62,7 @@ public static class PHash
     private static void Dct2(double[,] values)
     {
         var data = (double[,]) values.Clone();
-        
+
         // Compute constant values
         var scale1 = Math.PI / (values.GetLength(0) * 2);
         var scale2 = Math.PI / (values.GetLength(1) * 2);

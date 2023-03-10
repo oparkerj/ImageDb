@@ -8,7 +8,7 @@ namespace ImageDb;
 /// </summary>
 public class StoredData
 {
-    private JsonSerializer _serializer = new();
+    private readonly JsonSerializer _serializer = new();
 
     /// <summary>
     /// Read a json file with GZip compression.

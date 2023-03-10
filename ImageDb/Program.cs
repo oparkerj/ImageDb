@@ -45,7 +45,7 @@ static void RunAction(string[] args, bool allowManage = true)
         Manage();
         return;
     }
-    if (type == null)
+    if (type is null)
     {
         PrintOptions(allowManage);
         return;

@@ -59,6 +59,24 @@ public abstract class ActionBase
             return _tree;
         }
     }
+    
+    /// <summary>
+    /// Get the path to the configured database.
+    /// This can be overridden with the --database option.
+    /// </summary>
+    public string DatabasePath => Args.GetOption("database") ?? Config.Database;
+
+    /// <summary>
+    /// Get the path to the configured image folder.
+    /// This can be overridden with the --folder option.
+    /// </summary>
+    public string ImageDirPath => Args.GetOption("folder") ?? Config.ImageFolder;
+
+    /// <summary>
+    /// Get the path to the configured usage file.
+    /// This can be overriden with the --usefile option.
+    /// </summary>
+    public string UseFile => Args.GetOption("usefile") ?? Config.UsageFile;
 
     /// <summary>
     /// Load the config file from disk if it is not already loaded.
@@ -81,14 +99,13 @@ public abstract class ActionBase
     {
         if (_tree != null) return;
         LoadConfig();
-        _tree = _data.LoadTree(Args.GetOption("database") ?? Config.Database);
+        _tree = _data.LoadTree(DatabasePath);
         if (_tree == null)
         {
             TreeUpdated = true;
             _tree = new FileBkTree();
         }
-        var imageFolder = this.GetFolderOption();
-        _tree.HashFunction = s => PHash.ComputeHash(Path.Combine(imageFolder, s));
+        _tree.HashFunction = s => PHash.ComputeHash(Path.Combine(ImageDirPath, s));
         _tree.HashDistance = PHash.HashDistance;
     }
 
@@ -141,7 +158,7 @@ public abstract class ActionBase
         if (TreeUpdated && Tree != null)
         {
             Console.WriteLine("Saving database...");
-            _data.WriteTree(Tree, Config.Database, Args.HasOption(ShowJson.Usage));
+            _data.WriteTree(Tree, DatabasePath, Args.HasOption(ShowJson.Usage));
         }
         if (ConfigUpdated && Config != null)
         {
@@ -194,6 +211,6 @@ public abstract class ActionBase
     /// <returns>Relative path.</returns>
     protected string TreePath(string file)
     {
-        return Path.GetRelativePath(this.GetFolderOption(), file);
+        return Path.GetRelativePath(ImageDirPath, file);
     }
 }

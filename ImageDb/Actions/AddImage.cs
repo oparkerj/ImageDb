@@ -27,7 +27,6 @@ public class AddImage : ActionBase, IActionUsage
         }
 
         file = this.MoveFileToDir(file);
-        LoadTree();
         SafeAdd(file);
     }
 }

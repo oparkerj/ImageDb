@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Numerics;
 using Newtonsoft.Json;
 
 namespace ImageDb;
@@ -198,6 +197,7 @@ public class FileBkTree : IEnumerable<string>
                 bestNode = node;
                 bestDiff = diff;
             }
+            if (bestDiff == 0) break;
             foreach (var (d, subTree) in node.SubTrees)
             {
                 if (Math.Abs(d - diff) < bestDiff) queue.Enqueue((node, subTree));

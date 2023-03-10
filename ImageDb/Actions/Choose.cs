@@ -12,7 +12,6 @@ public class Choose : ActionBase, IActionUsage
     
     public override void Execute()
     {
-        LoadTree();
         var used = this.LoadUseFile();
         used ??= new HashSet<string>();
         var chosen = Tree.Except(used).FirstOrDefault();
