@@ -59,24 +59,45 @@ public abstract class ActionBase
             return _tree;
         }
     }
+
+    /// <summary>
+    /// Make the given path relative to the RelativeBase configuration option.
+    /// Paths which are rooted will not be changed.
+    /// The relative path can be overridden with the --relativeBase option.
+    /// </summary>
+    /// <param name="path">File path.</param>
+    /// <returns>Path relative to configured path.</returns>
+    private string UseRelativeBase(string path)
+    {
+        if (Path.IsPathRooted(path)) return path;
+        var relativeBase = Args.GetOption("relativeBase") ?? Config.RelativeBase;
+        return Path.Join(relativeBase, path);
+    }
     
     /// <summary>
     /// Get the path to the configured database.
     /// This can be overridden with the --database option.
     /// </summary>
-    public string DatabasePath => Args.GetOption("database") ?? Config.Database;
+    public string DatabasePath => UseRelativeBase(Args.GetOption("database") ?? Config.Database);
 
     /// <summary>
     /// Get the path to the configured image folder.
     /// This can be overridden with the --folder option.
     /// </summary>
-    public string ImageDirPath => Args.GetOption("folder") ?? Config.ImageFolder;
+    public string ImageDirPath => UseRelativeBase(Args.GetOption("folder") ?? Config.ImageFolder);
 
     /// <summary>
     /// Get the path to the configured usage file.
     /// This can be overriden with the --usefile option.
     /// </summary>
-    public string UseFile => Args.GetOption("usefile") ?? Config.UsageFile;
+    public string UseFile => UseRelativeBase(Args.GetOption("usefile") ?? Config.UsageFile);
+    
+    /// <summary>
+    /// Get the path to the config file.
+    /// This is set with the --config option.
+    /// Defaults to "config.json"
+    /// </summary>
+    public string ConfigPath => Args.GetOption("config") ?? "config.json";
 
     /// <summary>
     /// Load the config file from disk if it is not already loaded.
@@ -84,7 +105,7 @@ public abstract class ActionBase
     protected void LoadConfig()
     {
         if (_config != null) return;
-        _config = _data.LoadConfig(Args.GetOption("config"));
+        _config = _data.LoadConfig(ConfigPath);
         if (_config == null)
         {
             ConfigUpdated = true;
@@ -163,7 +184,7 @@ public abstract class ActionBase
         if (ConfigUpdated && Config != null)
         {
             Console.WriteLine("Saving config...");
-            _data.SaveConfig(Config, Args.GetOption("config"));
+            _data.SaveConfig(Config, ConfigPath);
         }
     }
 

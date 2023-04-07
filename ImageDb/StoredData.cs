@@ -105,7 +105,6 @@ public class StoredData
     /// <returns>Config object, or null if the config file does not exist.</returns>
     public Config LoadConfig(string path)
     {
-        path ??= "config.json";
         return ReadJson<Config>(path);
     }
 
@@ -116,7 +115,6 @@ public class StoredData
     /// <param name="path">File path.</param>
     public void SaveConfig(Config config, string path)
     {
-        path ??= "config.json";
         WriteJson(config, path);
     }
 }

@@ -24,4 +24,9 @@ public class Config
     /// Format of file names in the image folder.
     /// </summary>
     public string NameFormat { get; set; } = "image{num}{ext}";
+
+    /// <summary>
+    /// Base folder for relative paths. Null for current directory.
+    /// </summary>
+    public string RelativeBase { get; set; } = null;
 }
