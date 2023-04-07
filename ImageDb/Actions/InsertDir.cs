@@ -11,36 +11,14 @@ public class InsertDir : ActionBase, IActionUsage
     public static string Usage => "insertDir <dir> <autoAcceptTolerance> [autoDenyTolerance]";
     
     public InsertDir(ArgReader args) : base(args) { }
-    
-    public override void Execute()
+
+    public void Execute(string dir, int tolerance, int autoDeny = -1)
     {
-        if (!GetArgs(2, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
-
-        var dir = args[0];
-        if (!Directory.Exists(dir))
-        {
-            Console.WriteLine($"Cannot find directory \"{dir}\"");
-            return;
-        }
-
-        if (!int.TryParse(args[1], out var tolerance) || tolerance < 0)
-        {
-            Console.WriteLine("Invalid tolerance level.");
-            return;
-        }
-
-        int autoDeny;
-        if (!TryGetArg(2, out autoDeny)) autoDeny = -1;
         if (autoDeny >= tolerance)
         {
-            Console.WriteLine("Auto-deny must be less than tolerance.");
-            return;
+            throw new ArgumentException("Auto-deny must be less than tolerance.");
         }
-
+        
         void Add(string file)
         {
             var moved = this.MoveFileToDir(file);
@@ -70,5 +48,20 @@ public class InsertDir : ActionBase, IActionUsage
                 Add(file);
             }
         }
+    }
+    
+    public override void Execute()
+    {
+        if (GetArg(0) is var dir && !Directory.Exists(dir))
+        {
+            throw new Exception($"Cannot find directory \"{dir}\"");
+        }
+        if (GetArg<int>(1) is var tolerance && tolerance < 0)
+        {
+            throw new Exception("Invalid tolerance level.");
+        }
+        var autoDeny = GetArgOrDefault(2, -1);
+        
+        Execute(dir, tolerance, autoDeny);
     }
 }

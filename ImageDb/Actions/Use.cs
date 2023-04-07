@@ -17,19 +17,11 @@ public class Use : ActionBase, IActionUsage
         return format.Replace("{num}", num.ToString());
     }
 
-    public override void Execute()
+    public void Execute(string file)
     {
-        if (!GetArgs(1, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
-        
-        var file = args[0];
         if (!File.Exists(file))
         {
-            Console.WriteLine($"File doesn't exist \"{file}\"");
-            return;
+            throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
         
         LoadTree();
@@ -52,4 +44,6 @@ public class Use : ActionBase, IActionUsage
             Console.WriteLine("File has already been used.");
         }
     }
+
+    public override void Execute() => Execute(GetArg(0));
 }

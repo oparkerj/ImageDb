@@ -149,6 +149,59 @@ public abstract class ActionBase
     }
 
     /// <summary>
+    /// Get the argument at the given index.
+    /// </summary>
+    /// <param name="index">Parameter index</param>
+    /// <returns>Argument value</returns>
+    /// <exception cref="IndexOutOfRangeException">The given index is not valid.</exception>
+    protected string GetArg(int index)
+    {
+        if (index + 1 >= Args.Count)
+        {
+            throw new IndexOutOfRangeException($"Expected argument at index {index}");
+        }
+
+        return Args[index + 1];
+    }
+
+    /// <summary>
+    /// Parse the argument at the given index.
+    /// </summary>
+    /// <param name="index">Parameter index.</param>
+    /// <typeparam name="T">Paramteer type</typeparam>
+    /// <returns>Parsed parameter.</returns>
+    /// <exception cref="ArgumentException">The argument could not be parsed.</exception>
+    protected T GetArg<T>(int index)
+        where T : IParsable<T>
+    {
+        var success = T.TryParse(GetArg(index), null, out var result);
+        if (!success)
+        {
+            throw new ArgumentException($"Could not parse argument at index {index} as type {typeof(T).Name}");
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Parse the argument at the given index if it exists and can be parsed.
+    /// </summary>
+    /// <param name="index">Parameter index.</param>
+    /// <param name="default">Parameter default value.</param>
+    /// <typeparam name="T">Parameter type.</typeparam>
+    /// <returns>Parsed parameter if it exists and can be parsed.</returns>
+    /// <exception cref="ArgumentException">If the argument could not be parsed.</exception>
+    protected T GetArgOrDefault<T>(int index, T @default = default)
+        where T : IParsable<T>
+    {
+        if (index + 1 >= Args.Count) return @default;
+        if (!T.TryParse(Args[index + 1], null, out var t))
+        {
+            throw new ArgumentException($"Could not parse argument at index {index} as type {typeof(T).Name}");
+        }
+        return t;
+    }
+
+    /// <summary>
     /// Get the arg at the specified index, and parse it according
     /// to the parsable type. Index 0 refers to the argument after
     /// the command name.

@@ -52,8 +52,18 @@ static void RunAction(string[] args, bool allowManage = true)
     }
 
     var action = (ActionBase) Activator.CreateInstance(type, options)!;
-    action.Execute();
-    action.Finish();
+
+    try
+    {
+        action.Execute();
+        action.Finish();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"A problem occurred while executing the command: \"{e.Message}\"");
+        if (options.HasOption("errors")) Console.WriteLine($"Stack trace: {e.StackTrace}");
+        else Console.WriteLine("Run with the --errors option to print the stack trace.");
+    }
 }
 
 // Enter manage mode aka interactive mode.

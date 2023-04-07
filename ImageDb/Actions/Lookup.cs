@@ -10,23 +10,13 @@ public class Lookup : ActionBase, IActionUsage
     public static string Usage => "lookup <file> [tolerance]";
     
     public Lookup(ArgReader args) : base(args) { }
-    
-    public override void Execute()
+
+    public void Execute(string file, int tolerance = 0)
     {
-        if (!GetArgs(1, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
-        
-        var file = args[0];
         if (!File.Exists(file))
         {
-            Console.WriteLine($"File doesn't exist \"{file}\"");
-            return;
+            throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
-
-        TryGetArg<int>(1, out var tolerance);
 
         LoadTree();
         Console.WriteLine($"Looking up similar entries with tolerance = {tolerance}:");
@@ -45,4 +35,6 @@ public class Lookup : ActionBase, IActionUsage
             else Console.WriteLine($"Distance: {distance}, {result}");
         }
     }
+    
+    public override void Execute() => Execute(GetArg(0), GetArgOrDefault<int>(1));
 }

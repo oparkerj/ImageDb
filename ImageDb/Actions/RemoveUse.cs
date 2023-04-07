@@ -8,20 +8,12 @@ public class RemoveUse : ActionBase, IActionUsage
     public static string Usage => "removeUse <file>";
     
     public RemoveUse(ArgReader args) : base(args) { }
-    
-    public override void Execute()
+
+    public void Execute(string file)
     {
-        if (!GetArgs(1, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
-        
-        var file = args[0];
         if (!File.Exists(file))
         {
-            Console.WriteLine($"File doesn't exist \"{file}\"");
-            return;
+            throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
 
         var used = this.LoadUseFile();
@@ -38,4 +30,6 @@ public class RemoveUse : ActionBase, IActionUsage
             Console.WriteLine("File is not used.");
         }
     }
+    
+    public override void Execute() => Execute(GetArg(0));
 }

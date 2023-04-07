@@ -11,27 +11,21 @@ public class Insert : ActionBase, IActionUsage
     public static string Usage => "insert <file>";
     
     public Insert(ArgReader args) : base(args) { }
-    
-    public override void Execute()
+
+    public void Execute(string file)
     {
-        if (!GetArgs(1, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
-        
-        var file = args[0];
         if (!File.Exists(file))
         {
-            Console.WriteLine($"File doesn't exist \"{file}\"");
-            return;
+            throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
         
-        new Lookup(ArgReader.FromCommand($"lookup {file}")).Execute();
+        new Lookup(null).Execute(file);
         Console.Write("Add file? (y/n): ");
         var response = Console.ReadLine();
         if (response != "y") return;
         
-        new AddImage(ArgReader.FromCommand($"add {file}")).Execute();
+        new AddImage(null).Execute(file);
     }
+    
+    public override void Execute() => Execute(GetArg(0));
 }

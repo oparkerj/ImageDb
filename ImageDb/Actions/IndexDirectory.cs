@@ -9,20 +9,12 @@ public class IndexDirectory : ActionBase, IActionUsage
     public static string Usage => "index <directory>";
     
     public IndexDirectory(ArgReader args) : base(args) { }
-    
-    public override void Execute()
-    {
-        if (!GetArgs(1, out var args))
-        {
-            Console.WriteLine(Usage);
-            return;
-        }
 
-        var dir = args[0];
+    public void Execute(string dir)
+    {
         if (!Directory.Exists(dir))
         {
-            Console.WriteLine($"Cannot find directory \"{dir}\"");
-            return;
+            throw new ArgumentException($"Cannot find directory \"{dir}\"");
         }
         
         Console.WriteLine("Indexing directory...");
@@ -33,4 +25,6 @@ public class IndexDirectory : ActionBase, IActionUsage
         }
         Console.WriteLine("Finished indexing.");
     }
+    
+    public override void Execute() => Execute(GetArg(0));
 }
