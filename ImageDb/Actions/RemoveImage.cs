@@ -10,17 +10,18 @@ public class RemoveImage : ActionBase, IActionUsage
     
     public RemoveImage(ArgReader args) : base(args) { }
 
-    public void Execute(string file)
+    public bool Execute(string file)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
         
-        LoadTree();
         var removed = Tree.Remove(TreePath(file));
         if (removed) Console.WriteLine($"Removed file \"{file}\"");
         else Console.WriteLine("File was not present in database.");
+
+        return removed;
     }
     
     public override void Execute() => Execute(GetArg(0));

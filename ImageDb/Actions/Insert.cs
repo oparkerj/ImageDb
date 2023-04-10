@@ -12,7 +12,9 @@ public class Insert : ActionBase, IActionUsage
     
     public Insert(ArgReader args) : base(args) { }
 
-    public void Execute(string file)
+    // Doesn't really make sense to call this one externally since it
+    // is based around asking for console confirmation before adding.
+    public bool Execute(string file)
     {
         if (!File.Exists(file))
         {
@@ -22,9 +24,10 @@ public class Insert : ActionBase, IActionUsage
         new Lookup(null).Execute(file);
         Console.Write("Add file? (y/n): ");
         var response = Console.ReadLine();
-        if (response != "y") return;
+        if (response != "y") return false;
         
         new AddImage(null).Execute(file);
+        return true;
     }
     
     public override void Execute() => Execute(GetArg(0));

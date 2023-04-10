@@ -17,14 +17,13 @@ public class Use : ActionBase, IActionUsage
         return format.Replace("{num}", num.ToString());
     }
 
-    public void Execute(string file)
+    public bool Execute(string file)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
         
-        LoadTree();
         if (!Tree.Contains(TreePath(file)))
         {
             Console.WriteLine("Image is not indexed.");
@@ -34,15 +33,15 @@ public class Use : ActionBase, IActionUsage
 
         var used = this.LoadUseFile();
         used ??= new HashSet<string>();
+        
         if (used.Add(TreePath(file)))
         {
             this.WriteUseFile(used);
             Console.WriteLine("Marked file as used.");
+            return true;
         }
-        else
-        {
-            Console.WriteLine("File has already been used.");
-        }
+        Console.WriteLine("File has already been used.");
+        return false;
     }
 
     public override void Execute() => Execute(GetArg(0));

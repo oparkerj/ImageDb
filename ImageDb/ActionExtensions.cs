@@ -63,4 +63,20 @@ public static class ActionExtensions
         if (space < 0) return usage == cmd;
         return usage.AsSpan(0, space).Equals(cmd.AsSpan(), StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// Takes a list of paths within the image directory and prepends the image
+    /// directory path.
+    /// </summary>
+    /// <param name="list">Image paths.</param>
+    /// <param name="imageDir">Image directory path.</param>
+    /// <returns>Input list.</returns>
+    public static List<string> RelativeFromImageDir(this List<string> list, string imageDir)
+    {
+        for (var i = 0; i < list.Count; i++)
+        {
+            list[i] = Path.Join(imageDir, list[i]);
+        }
+        return list;
+    }
 }

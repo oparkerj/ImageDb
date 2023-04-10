@@ -11,23 +11,41 @@ public class Lookup : ActionBase, IActionUsage
     
     public Lookup(ArgReader args) : base(args) { }
 
-    public void Execute(string file, int tolerance = 0)
+    public List<string> FindRelative(string file, int tolerance = 0)
+    {
+        return Find(file, tolerance).RelativeFromImageDir(ImageDirPath);
+    }
+
+    public List<string> Find(string file, int tolerance = 0)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
 
-        LoadTree();
-        Console.WriteLine($"Looking up similar entries with tolerance = {tolerance}:");
-        var similar = false;
+        var similar = new List<string>();
         foreach (var s in Tree.LookupAll(TreePath(file), tolerance))
         {
             Console.WriteLine(s);
-            similar = true;
+            similar.Add(s);
         }
 
-        if (!similar)
+        return similar;
+    }
+
+    public void Execute(string file, int tolerance = 0)
+    {
+        var similarList = Find(file, tolerance);
+        Console.WriteLine($"Looking up similar entries with tolerance = {tolerance}:");
+        
+        if (similarList.Count > 0)
+        {
+            foreach (var s in similarList)
+            {
+                Console.WriteLine(s);
+            }
+        }
+        else
         {
             Console.WriteLine("There were no images within the tolerance, searching for the closest match...");
             var (result, distance) = Tree.LookupDistance(TreePath(file));

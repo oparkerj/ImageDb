@@ -9,21 +9,27 @@ public class Choose : ActionBase, IActionUsage
     public static string Usage => "choose";
     
     public Choose(ArgReader args) : base(args) { }
-    
-    public override void Execute()
+
+    public string ExecuteGet()
     {
         var used = this.LoadUseFile();
         used ??= new HashSet<string>();
+        
         var chosen = Tree.Except(used).FirstOrDefault();
         if (chosen == null)
         {
             Console.WriteLine("There are no unused images.");
-            return;
+            return null;
         }
+        
         used.Add(chosen);
         Console.WriteLine("Updating use file...");
         this.WriteUseFile(used);
         Console.WriteLine("Chosen image:");
         Console.WriteLine(chosen);
+
+        return Path.Join(ImageDirPath, chosen);
     }
+    
+    public override void Execute() => ExecuteGet();
 }

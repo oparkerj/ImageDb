@@ -12,6 +12,8 @@ public class InsertDir : ActionBase, IActionUsage
     
     public InsertDir(ArgReader args) : base(args) { }
 
+    // Doesn't really make sense to call this one externally since it
+    // is based around asking for console confirmation before adding.
     public void Execute(string dir, int tolerance, int autoDeny = -1)
     {
         if (autoDeny >= tolerance)

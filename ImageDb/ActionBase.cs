@@ -71,7 +71,7 @@ public abstract class ActionBase
     {
         if (Path.IsPathRooted(path)) return path;
         var relativeBase = Args.GetOption("relativeBase") ?? Config.RelativeBase;
-        return Path.Join(relativeBase, path);
+        return relativeBase is null ? path : Path.Join(relativeBase, path);
     }
     
     /// <summary>

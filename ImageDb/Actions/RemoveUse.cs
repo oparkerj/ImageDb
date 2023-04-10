@@ -9,7 +9,7 @@ public class RemoveUse : ActionBase, IActionUsage
     
     public RemoveUse(ArgReader args) : base(args) { }
 
-    public void Execute(string file)
+    public bool Execute(string file)
     {
         if (!File.Exists(file))
         {
@@ -29,6 +29,8 @@ public class RemoveUse : ActionBase, IActionUsage
         {
             Console.WriteLine("File is not used.");
         }
+
+        return removed;
     }
     
     public override void Execute() => Execute(GetArg(0));
