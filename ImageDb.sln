@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageDb", "ImageDb\ImageDb.csproj", "{5A827D92-565B-48E6-BF1C-44F032B0631B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageDb.CLI", "ImageDb.CLI\ImageDb.CLI.csproj", "{5A827D92-565B-48E6-BF1C-44F032B0631B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
