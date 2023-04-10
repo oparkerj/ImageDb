@@ -1,4 +1,6 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// Select an image from the database to mark as "used".

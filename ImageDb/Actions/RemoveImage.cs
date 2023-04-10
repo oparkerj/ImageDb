@@ -1,4 +1,6 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// Remove an image from the database. This should be used to manually

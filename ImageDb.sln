@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageDb.CLI", "ImageDb.CLI\ImageDb.CLI.csproj", "{5A827D92-565B-48E6-BF1C-44F032B0631B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageDb", "ImageDb\ImageDb.csproj", "{A01BB8B9-D8B1-4684-A7F0-7FEADAD0743C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{5A827D92-565B-48E6-BF1C-44F032B0631B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A827D92-565B-48E6-BF1C-44F032B0631B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A827D92-565B-48E6-BF1C-44F032B0631B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01BB8B9-D8B1-4684-A7F0-7FEADAD0743C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01BB8B9-D8B1-4684-A7F0-7FEADAD0743C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01BB8B9-D8B1-4684-A7F0-7FEADAD0743C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01BB8B9-D8B1-4684-A7F0-7FEADAD0743C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

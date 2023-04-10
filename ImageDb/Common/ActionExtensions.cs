@@ -1,6 +1,6 @@
 ﻿using ImageDb.Actions;
 
-namespace ImageDb;
+namespace ImageDb.Common;
 
 public static class ActionExtensions
 {

@@ -1,7 +1,8 @@
 ﻿using System.IO.Compression;
+using ImageDb.Common;
 using Newtonsoft.Json;
 
-namespace ImageDb;
+namespace ImageDb.Data;
 
 /// <summary>
 /// Provides reading and writing for configuration files.

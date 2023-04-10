@@ -1,4 +1,4 @@
-﻿namespace ImageDb;
+﻿namespace ImageDb.Common;
 
 /// <summary>
 /// Wrapper for program arguments which can search for command flags.

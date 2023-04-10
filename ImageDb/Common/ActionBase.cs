@@ -1,7 +1,8 @@
 ﻿using ImageDb.Actions;
+using ImageDb.Data;
 using ImageMagick;
 
-namespace ImageDb;
+namespace ImageDb.Common;
 
 /// <summary>
 /// Base class for the actions that the program can execute.

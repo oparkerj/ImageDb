@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using Newtonsoft.Json;
 
-namespace ImageDb;
+namespace ImageDb.Data;
 
 /// <summary>
 /// Data structure which stores file paths. This structure is implemented

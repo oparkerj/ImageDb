@@ -1,4 +1,4 @@
-﻿namespace ImageDb;
+﻿namespace ImageDb.Data;
 
 /// <summary>
 /// Defines a sorting order that orders file names in a more friendly way.

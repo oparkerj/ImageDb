@@ -1,4 +1,6 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// Lookup an image in the tree. This will report all images where

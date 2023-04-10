@@ -1,4 +1,7 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+using ImageDb.Data;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// Print out the list of files marked as used.

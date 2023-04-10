@@ -1,4 +1,6 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// This will first run a lookup on the file to find the most

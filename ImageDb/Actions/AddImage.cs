@@ -1,4 +1,6 @@
-﻿namespace ImageDb.Actions;
+﻿using ImageDb.Common;
+
+namespace ImageDb.Actions;
 
 /// <summary>
 /// This action adds an image to the database.

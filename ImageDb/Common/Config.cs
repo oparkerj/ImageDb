@@ -1,4 +1,4 @@
-﻿namespace ImageDb;
+﻿namespace ImageDb.Common;
 
 /// <summary>
 /// Configuration values to use when running the program.

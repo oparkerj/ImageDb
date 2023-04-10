@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using ImageMagick;
 
-namespace ImageDb;
+namespace ImageDb.Data;
 
 /// <summary>
 /// Provides the ability to calculate a perceptual hash for an image.

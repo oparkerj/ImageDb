@@ -1,4 +1,4 @@
-﻿namespace ImageDb;
+﻿namespace ImageDb.Common;
 
 /// <summary>
 /// Represents an action with a usage string.
