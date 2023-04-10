@@ -42,7 +42,7 @@ static void RunAction(string[] args, bool allowManage = true)
 
     if (allowManage && actionName == "manage")
     {
-        Manage();
+        Manage(options);
         return;
     }
     if (type is null)
@@ -67,14 +67,15 @@ static void RunAction(string[] args, bool allowManage = true)
 }
 
 // Enter manage mode aka interactive mode.
-static void Manage()
+static void Manage(ArgReader args)
 {
+    var options = args.ExtractOptions();
     while (true)
     {
         Console.Write("Enter command: ");
         var cmd = Console.ReadLine();
         if (cmd == "exit") return;
-        RunAction(ArgReader.Split(cmd), false);
+        RunAction(ArgReader.Split(cmd, options.Args), false);
     }
 }
 

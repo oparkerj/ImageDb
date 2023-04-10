@@ -9,6 +9,13 @@ public class ArgReader
 
     public ArgReader(string[] args) => Args = args;
 
+    public ArgReader(string[] args, ArgReader extra)
+    {
+        Args = new string[args.Length + extra.Count];
+        Array.Copy(args, Args, args.Length);
+        Array.Copy(extra.Args, 0, Args, args.Length, extra.Count);
+    }
+
     /// <summary>
     /// Create a set of arguments from a command string.
     ///
@@ -46,10 +53,16 @@ public class ArgReader
     /// Split a command into its parts.
     /// </summary>
     /// <param name="cmd">Command string.</param>
+    /// <param name="extra">Extra args to insert into the command.</param>
     /// <returns>Command parts.</returns>
-    public static string[] Split(string cmd)
+    public static string[] Split(string cmd, IEnumerable<string> extra = null)
     {
-        return SplitCommand(cmd).ToArray();
+        if (extra is null)
+        {
+            return SplitCommand(cmd).ToArray();
+        }
+        
+        return SplitCommand(cmd).Concat(extra).ToArray();
     }
 
     /// <summary>
@@ -59,7 +72,6 @@ public class ArgReader
     /// --option
     /// --option value
     /// --option=value
-    /// --option="value with spaces"
     ///
     /// In the first case, the option will have a null value.
     /// The option would also have a null value in the following situation:
@@ -161,5 +173,22 @@ public class ArgReader
             throw new ArgumentException();
         }
         return result;
+    }
+
+    public ArgReader ExtractOptions()
+    {
+        var options = new List<string>();
+        for (var i = 0; i < Args.Length; i++)
+        {
+            var option = Args[i];
+            if (!option.StartsWith("--")) continue;
+            options.Add(option);
+            if (!option.Contains('=') && i < Args.Length - 1 && !Args[i + 1].StartsWith("--"))
+            {
+                options.Add(Args[i + 1]);
+                i++;
+            }
+        }
+        return new ArgReader(options.ToArray());
     }
 }

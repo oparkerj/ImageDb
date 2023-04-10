@@ -20,13 +20,15 @@ public class Insert : ActionBase, IActionUsage
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
+
+        var options = Args.ExtractOptions();
         
-        new Lookup(null).Execute(file);
+        new Lookup(options).Execute(file);
         Console.Write("Add file? (y/n): ");
         var response = Console.ReadLine();
         if (response != "y") return false;
         
-        new AddImage(null).Execute(file);
+        new AddImage(options).Execute(file);
         return true;
     }
     

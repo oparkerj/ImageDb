@@ -20,7 +20,7 @@ public class UseAll : ActionBase, IActionUsage
         foreach (var file in Directory.EnumerateFiles(dir))
         {
             Console.WriteLine($"Using {file}");
-            new Use(null).Execute(file);
+            new Use(Args.ExtractOptions()).Execute(file);
         }
         Console.WriteLine("Finished processing files.");
     }

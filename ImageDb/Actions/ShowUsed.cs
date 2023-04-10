@@ -27,22 +27,17 @@ public class ShowUsed : ActionBase, IActionUsage
     
     public override void Execute()
     {
-        
-        
-        var used = this.LoadUseFile();
-
-        void NoUsed() => Console.WriteLine("No files are used.");
-        
-        if (used != null)
+        var used = Get();
+        if (used.Count == 0)
         {
-            var one = false;
-            foreach (var s in used.Order(new CountOrder()))
+            Console.WriteLine("No files are used.");
+        }
+        else
+        {
+            foreach (var s in used)
             {
-                one = true;
                 Console.WriteLine(s);
             }
-            if (!one) NoUsed();
         }
-        else NoUsed();
     }
 }
