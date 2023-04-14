@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using ImageDb.Common;
 using Newtonsoft.Json;
 
 namespace ImageDb.Data;
@@ -7,7 +6,7 @@ namespace ImageDb.Data;
 /// <summary>
 /// Provides reading and writing for configuration files.
 /// </summary>
-public class StoredData
+public class ConfigFileHandler
 {
     private readonly JsonSerializer _serializer = new();
 
@@ -65,6 +64,22 @@ public class StoredData
     }
 
     /// <summary>
+    /// Read a json file and use it to populate an object.
+    /// </summary>
+    /// <param name="path">File path.</param>
+    /// <param name="value">Object to populate.</param>
+    /// <returns>True if the object was populated, false otherwise.</returns>
+    public bool ReadJson(string path, object value)
+    {
+        if (!File.Exists(path)) return false;
+        using var data = File.OpenRead(path);
+        using var reader = new StreamReader(data);
+        using var jsonReader = new JsonTextReader(reader);
+        _serializer.Populate(jsonReader, value);
+        return true;
+    }
+
+    /// <summary>
     /// Write the object to a json file.
     /// </summary>
     /// <param name="obj">Object.</param>
@@ -100,22 +115,23 @@ public class StoredData
     }
 
     /// <summary>
-    /// Load the configuration file.
+    /// Read the usage file.
     /// </summary>
-    /// <param name="path">File path.</param>
-    /// <returns>Config object, or null if the config file does not exist.</returns>
-    public Config LoadConfig(string path)
+    /// <param name="path">Path of usage file.</param>
+    /// <returns>Usage file data.</returns>
+    public HashSet<string> LoadUsageFile(string path)
     {
-        return ReadJson<Config>(path);
+        return ReadGZipped<HashSet<string>>(path);
     }
 
     /// <summary>
-    /// Write the configuration file.
+    /// Write the usage file.
     /// </summary>
-    /// <param name="config">Config object.</param>
-    /// <param name="path">File path.</param>
-    public void SaveConfig(Config config, string path)
+    /// <param name="used">Usage data.</param>
+    /// <param name="path">Usage file path.</param>
+    /// <param name="plain">Corresponds to the includeUncompressed option in WriteGZipped.</param>
+    public void WriteUsageFile(HashSet<string> used, string path, bool plain = false)
     {
-        WriteJson(config, path);
+        WriteGZipped(used, path, plain);
     }
 }

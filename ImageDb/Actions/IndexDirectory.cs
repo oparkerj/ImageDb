@@ -1,32 +1,36 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
 /// <summary>
-/// This is equivalent to running "add [file]" on every file
+/// This is equivalent to running AddImage on every file
 /// in a directory.
 /// </summary>
-public class IndexDirectory : ActionBase, IActionUsage
+public class IndexDirectory : IAction
 {
     public static string Usage => "index <directory>";
-    
-    public IndexDirectory(ArgReader args) : base(args) { }
 
-    public void Execute(string dir)
+    public ImageDbConfig Config { get; set; }
+
+    public int Execute(string dir)
     {
         if (!Directory.Exists(dir))
         {
             throw new ArgumentException($"Cannot find directory \"{dir}\"");
         }
         
-        Console.WriteLine("Indexing directory...");
+        Config.Update("Indexing directory...");
+        
+        var added = 0;
+        using var db = new ImageDbFileHandler {Config = Config};
         foreach (var file in Directory.EnumerateFiles(dir))
         {
-            var add = this.MoveFileToDir(file);
-            SafeAdd(add);
+            var path = AddImage.Execute(file, db);
+            if (path != null) added++;
         }
-        Console.WriteLine("Finished indexing.");
+        
+        Config.Update("Finished indexing.");
+        return added;
     }
-    
-    public override void Execute() => Execute(GetArg(0));
 }

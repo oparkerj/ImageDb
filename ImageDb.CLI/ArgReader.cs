@@ -1,29 +1,13 @@
-﻿namespace ImageDb.Common;
+﻿namespace ImageDb.CLI;
 
 /// <summary>
 /// Wrapper for program arguments which can search for command flags.
 /// </summary>
 public class ArgReader
 {
-    public string[] Args { get; private set; }
+    public string[] Args { get; set; }
 
     public ArgReader(string[] args) => Args = args;
-
-    public ArgReader(string[] args, ArgReader extra)
-    {
-        Args = new string[args.Length + extra.Count];
-        Array.Copy(args, Args, args.Length);
-        Array.Copy(extra.Args, 0, Args, args.Length, extra.Count);
-    }
-
-    /// <summary>
-    /// Create a set of arguments from a command string.
-    ///
-    /// <see cref="Split"/>
-    /// </summary>
-    /// <param name="cmd">Command string.</param>
-    /// <returns>Split arguments.</returns>
-    public static ArgReader FromCommand(string cmd) => new(Split(cmd));
 
     /// <summary>
     /// Split the given command. This will split the string at spaces, except
@@ -55,15 +39,7 @@ public class ArgReader
     /// <param name="cmd">Command string.</param>
     /// <param name="extra">Extra args to insert into the command.</param>
     /// <returns>Command parts.</returns>
-    public static string[] Split(string cmd, IEnumerable<string> extra = null)
-    {
-        if (extra is null)
-        {
-            return SplitCommand(cmd).ToArray();
-        }
-        
-        return SplitCommand(cmd).Concat(extra).ToArray();
-    }
+    public static string[] Split(string cmd) => SplitCommand(cmd).ToArray();
 
     /// <summary>
     /// Searches for the option with the given name. An option is a part of
@@ -114,18 +90,16 @@ public class ArgReader
     /// Get the argument at the given index.
     /// </summary>
     /// <param name="i">Argument index.</param>
-    public string this[int i] => Args[i];
-
-    /// <summary>
-    /// Insert the given option into the arguments.
-    /// </summary>
-    /// <param name="name">Option name.</param>
-    /// <param name="value">Option value.</param>
-    public void InsertOption(string name, string value = null)
+    public string this[int i]
     {
-        if (value != null) name += '=' + value;
-        name = "--" + name;
-        Args = Args.Append(name).ToArray();
+        get
+        {
+            if (i >= Args.Length)
+            {
+                throw new ArgumentException($"Expecting argument at index {i + 1}");
+            }
+            return Args[i];
+        }
     }
 
     /// <summary>
@@ -150,6 +124,52 @@ public class ArgReader
     }
 
     /// <summary>
+    /// Parse the argument at the given index.
+    /// </summary>
+    /// <param name="index">Argument index</param>
+    /// <typeparam name="T">Argument type</typeparam>
+    /// <returns>Parsed argument</returns>
+    /// <exception cref="ArgumentException">If the index is out of range.</exception>
+    public T Get<T>(int index)
+        where T : IParsable<T>
+    {
+        if (index >= Args.Length)
+        {
+            throw new ArgumentException($"Expected argument of type {typeof(T).Name} at index {index + 1}");
+        }
+
+        return T.Parse(Args[index], null);
+    }
+
+    
+    /// <summary>
+    /// Try to parse the argument at the given index.
+    /// If no argument exists at the index, the default value is returned.
+    /// If the argument exists but could not be parsed, an exception occurs.
+    /// </summary>
+    /// <param name="index">Argument index</param>
+    /// <param name="default">Default value</param>
+    /// <typeparam name="T">Argument type</typeparam>
+    /// <returns>Parsed argument</returns>
+    /// <exception cref="ArgumentException">If the argument exists but could not be parsed
+    /// as the given type.</exception>
+    public T GetOrDefault<T>(int index, T @default = default)
+        where T : IParsable<T>
+    {
+        if (index >= Args.Length)
+        {
+            return @default;
+        }
+
+        if (!T.TryParse(Args[index], null, out var result))
+        {
+            throw new ArgumentException($"Could not parse argument at index {index + 1} as type {typeof(T).Name}");
+        }
+        
+        return result;
+    }
+
+    /// <summary>
     /// Get the option of the given value, parsed into the given type.
     /// </summary>
     /// <param name="name">Option name.</param>
@@ -163,32 +183,13 @@ public class ArgReader
         var present = TryGetArgValue(name, out var value);
         if (!present)
         {
-            Console.WriteLine($"Expecting value for option \"{name}\".");
-            throw new ArgumentException();
+            throw new ArgumentException($"Expecting value for option \"{name}\".");
         }
         present = T.TryParse(value, null, out var result);
         if (!present)
         {
-            Console.WriteLine($"Expecting value of type \"{typeof(T).Name}\" for option \"{name}\".");
-            throw new ArgumentException();
+            throw new ArgumentException($"Expecting value of type \"{typeof(T).Name}\" for option \"{name}\".");
         }
         return result;
-    }
-
-    public ArgReader ExtractOptions()
-    {
-        var options = new List<string>();
-        for (var i = 0; i < Args.Length; i++)
-        {
-            var option = Args[i];
-            if (!option.StartsWith("--")) continue;
-            options.Add(option);
-            if (!option.Contains('=') && i < Args.Length - 1 && !Args[i + 1].StartsWith("--"))
-            {
-                options.Add(Args[i + 1]);
-                i++;
-            }
-        }
-        return new ArgReader(options.ToArray());
     }
 }

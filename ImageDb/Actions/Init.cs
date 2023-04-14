@@ -1,4 +1,5 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
@@ -7,22 +8,22 @@ namespace ImageDb.Actions;
 /// This will create a config file, an empty database, an
 /// empty "used" file, and create the default image folder.
 /// </summary>
-public class Init : ActionBase, IActionUsage
+public class Init : IAction
 {
     public static string Usage => "init";
-    
-    public Init(ArgReader args) : base(args) { }
-    
-    public override void Execute()
-    {
-        LoadConfig();
-        LoadTree();
-        TreeUpdated = true;
-        ConfigUpdated = true;
 
-        var used = this.LoadUseFile();
-        used ??= new HashSet<string>();
-        this.WriteUseFile(used);
-        Directory.CreateDirectory(ImageDirPath);
+    public ImageDbConfig Config { get; set; }
+
+    public void Execute()
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        
+        db.LoadTree();
+        db.LoadUsage();
+        db.TreeUpdated = true;
+        db.UsageUpdated = true;
+
+        Directory.CreateDirectory(Config.ImageFolderRelative);
+        Config.SaveConfigFile();
     }
 }

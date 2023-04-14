@@ -1,88 +1,110 @@
 ﻿using ImageDb.Actions;
+using ImageDb.CLI;
+using ImageDb.CLI.Actions;
 using ImageDb.Common;
 
-RunAction(args);
+var command = new ArgReader(args);
+var actions = BuildActions();
+var config = LoadConfig(command);
+config.Status += Console.WriteLine;
+TryExecute();
 
 // Get all actions the program can execute.
-static IEnumerable<(string Usage, Type Type)> AllActions()
+static Dictionary<string, ActionHandler> BuildActions()
 {
-    static (string, Type) Add<T>()
-        where T : ActionBase, IActionUsage
-    {
-        return (T.Usage, typeof(T));
-    }
+    var actions = new Dictionary<string, ActionHandler>();
 
-    yield return Add<Init>();
-    yield return Add<IndexDirectory>();
-    yield return Add<AddImage>();
-    yield return Add<RemoveImage>();
-    yield return Add<Lookup>();
-    yield return Add<ShowJson>();
-    yield return Add<Use>();
-    yield return Add<UseAll>();
-    yield return Add<RemoveUse>();
-    yield return Add<Insert>();
-    yield return Add<InsertDir>();
-    yield return Add<Choose>();
-    yield return Add<ShowUsed>();
+    Add<Init>((action, _) => action.Execute());
+    Add<IndexDirectory>((action, reader) => action.Execute(reader[1]));
+    Add<AddImage>((action, reader) => action.Execute(reader[1]));
+    Add<RemoveImage>((action, reader) => action.Execute(reader[1]));
+    Add<Lookup>(((action, reader) => action.Execute(reader[1], reader.Get<int>(2))));
+    Add<ShowJson>((action, _) => action.Execute());
+    Add<Use>((action, reader) => action.Execute(reader[1]));
+    Add<UseAll>((action, reader) => action.Execute(reader[1]));
+    Add<RemoveUse>((action, reader) => action.Execute(reader[1]));
+    Add<Choose>((action, _) => action.Execute());
+    Add<ShowUsed>((action, _) => action.Execute());
+    Add<Insert>((action, reader) => action.Execute(reader[1]));
+    Add<InsertDir>((action, reader) => action.Execute(reader[1], reader.Get<int>(2), reader.GetOrDefault(3, -1)));
+
+    return actions;
+
+    void Add<T>(Action<T, ArgReader> action)
+        where T : IAction, new()
+    {
+        var name = T.Usage.IndexOf(' ') is var index && index >= 0 ? T.Usage[..index] : T.Usage;
+        actions[name] = new ActionHandler<T>(name, action);
+    }
 }
 
-// Run the action with the given arguments.
-static void RunAction(string[] args, bool allowManage = true)
+void TryExecute(bool allowManage = true)
 {
-    var options = new ArgReader(args);
-    if (options.Count < 1)
+    if (command.Count < 1)
     {
         PrintOptions(allowManage);
         return;
     }
-    var actionName = options[0];
-
-    var (_, type) = AllActions().FirstOrDefault(action => action.Usage.IsCommand(actionName));
+    
+    var actionName = command[0];
+    var handler = actions.GetValueOrDefault(actionName);
 
     if (allowManage && actionName == "manage")
     {
-        Manage(options);
+        Manage();
         return;
     }
-    if (type is null)
+    if (handler is null)
     {
         PrintOptions(allowManage);
         return;
     }
 
-    var action = (ActionBase) Activator.CreateInstance(type, options)!;
-
     try
     {
-        action.Execute();
-        action.Finish();
+        handler.Execute(config, command);
     }
     catch (Exception e)
     {
         Console.WriteLine($"A problem occurred while executing the command: \"{e.Message}\"");
-        if (options.HasOption("errors")) Console.WriteLine($"Stack trace: {e.StackTrace}");
+        if (command.HasOption("errors")) Console.WriteLine($"Stack trace: {e.StackTrace}");
         else Console.WriteLine("Run with the --errors option to print the stack trace.");
     }
 }
 
 // Enter manage mode aka interactive mode.
-static void Manage(ArgReader args)
+void Manage()
 {
-    var options = args.ExtractOptions();
     while (true)
     {
         Console.Write("Enter command: ");
         var cmd = Console.ReadLine();
-        if (cmd == "exit") return;
-        RunAction(ArgReader.Split(cmd, options.Args), false);
+        if (cmd is null or "exit") return;
+        command.Args = ArgReader.Split(cmd);
+        TryExecute(false);
     }
 }
 
-// Print out the usages for the available actions.
-static void PrintOptions(bool allowManage = true)
+static ImageDbConfig LoadConfig(ArgReader reader)
 {
-    Console.WriteLine($"Options:{Environment.NewLine}{
-    string.Join(Environment.NewLine, AllActions().Select(action => action.Usage))
-    }{Environment.NewLine}{(allowManage ? "manage" : "exit")}");
+    var config = new ImageDbConfig();
+
+    if (reader.HasOption("config")) config.ConfigPath = reader.GetOption("config");
+    config.LoadConfigFile();
+
+    if (reader.HasOption("database")) config.Database = reader.GetOption("database");
+    if (reader.HasOption("folder")) config.ImageFolder = reader.GetOption("folder");
+    if (reader.HasOption("usefile")) config.UsageFile = reader.GetOption("usefile");
+    if (reader.HasOption("relativeBase")) config.RelativeBase = reader.GetOption("relativeBase");
+    if (reader.HasOption("showjson")) config.ShowJson = true;
+
+    return config;
+}
+
+// Print out the usages for the available actions.
+void PrintOptions(bool allowManage)
+{
+    Console.WriteLine($"Options:{Environment.NewLine}" +
+                      $"{string.Join(Environment.NewLine, actions.Keys)}{Environment.NewLine}" +
+                      $"{(allowManage ? "manage" : "exit")}");
 }

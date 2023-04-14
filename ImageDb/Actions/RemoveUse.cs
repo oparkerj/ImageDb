@@ -1,39 +1,41 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
 /// <summary>
 /// Unmark an image as used.
 /// </summary>
-public class RemoveUse : ActionBase, IActionUsage
+public class RemoveUse : IAction
 {
     public static string Usage => "removeUse <file>";
-    
-    public RemoveUse(ArgReader args) : base(args) { }
 
-    public bool Execute(string file)
+    public ImageDbConfig Config { get; set; }
+
+    public static bool Execute(string file, ImageDbFileHandler db)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
-
-        var used = this.LoadUseFile();
-        used ??= new HashSet<string>();
-        var removed = used.Remove(TreePath(file));
+        
+        var removed = db.RemoveUsage(db.Config.RelativeToImageFolder(file));
+        
         if (removed)
         {
-            Console.WriteLine("Removed file from used.");
-            this.WriteUseFile(used);
-            Console.WriteLine("Saved use file.");
+            db.Config.Update("Removed file from used.");
         }
         else
         {
-            Console.WriteLine("File is not used.");
+            db.Config.Update("File is not used.");
         }
 
         return removed;
     }
-    
-    public override void Execute() => Execute(GetArg(0));
+
+    public bool Execute(string file)
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        return Execute(file, db);
+    }
 }

@@ -332,9 +332,13 @@ public class FileNode : IEnumerable<string>
         return _subTrees.SelectMany(pair => pair.Value).Prepend(Path).GetEnumerator();
     }
 
+    /// <summary>
+    /// Enumerate the paths and hashes of all children of this node.
+    /// </summary>
+    /// <returns>Paths and hashes</returns>
     public IEnumerable<(string Path, long Hash)> GetDetailedSubTreeInfo()
     {
-        return _subTrees.SelectMany(pair => pair.Value.GetDetailedSubTreeInfo());
+        return _subTrees.SelectMany(pair => pair.Value.GetDetailedSubTreeInfo().Prepend((pair.Value.Path, pair.Value.Hash)));
     }
 
     public override string ToString()

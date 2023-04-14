@@ -1,4 +1,5 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
@@ -7,22 +8,28 @@ namespace ImageDb.Actions;
 /// The file will be moved into the image folder.
 /// This does not check if a similar image already exists.
 /// </summary>
-public class AddImage : ActionBase, IActionUsage
+public class AddImage : IAction
 {
     public static string Usage => "add <file>";
-    
-    public AddImage(ArgReader args) : base(args) { }
 
-    public void Execute(string file)
+    public ImageDbConfig Config { get; set; }
+
+    public static string Execute(string file, ImageDbFileHandler db)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
 
-        file = this.MoveFileToDir(file);
-        SafeAdd(file);
+        var moved = ImageDbTools.MoveFileToImageDir(file, db.Config);
+        var success = db.TryAddImage(moved);
+
+        return success ? moved : null;
     }
-    
-    public override void Execute() => Execute(GetArg(0));
+
+    public string Execute(string file)
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        return Execute(file, db);
+    }
 }

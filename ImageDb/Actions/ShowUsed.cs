@@ -6,41 +6,45 @@ namespace ImageDb.Actions;
 /// <summary>
 /// Print out the list of files marked as used.
 /// </summary>
-public class ShowUsed : ActionBase, IActionUsage
+public class ShowUsed : IAction
 {
     public static string Usage => "showUsed";
-    
-    public ShowUsed(ArgReader args) : base(args) { }
 
-    public List<string> GetRelative()
+    public ImageDbConfig Config { get; set; }
+
+    private static IEnumerable<string> ExecuteInternal(ImageDbFileHandler db)
     {
-        return Get().RelativeFromImageDir(ImageDirPath);
+        return db.Used.Order(new CountOrder());
     }
 
-    public List<string> Get()
+    public static List<string> ExecuteRelative(ImageDbFileHandler db)
     {
-        var used = this.LoadUseFile();
-        var result = new List<string>(used?.Count ?? 0);
-        if (used != null)
-        {
-            result.AddRange(used.Order(new CountOrder()));
-        }
-        return result;
+        return ExecuteInternal(db).FromRelativePaths(db.Config.ImageFolderRelative).ToList();
     }
-    
-    public override void Execute()
+
+    public static List<string> Execute(ImageDbFileHandler db)
     {
-        var used = Get();
+        return ExecuteInternal(db).ToList();
+    }
+
+    public List<string> Execute()
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+
+        var used = Execute(db);
+        
         if (used.Count == 0)
         {
-            Console.WriteLine("No files are used.");
+            Config.Update("No files are used.");
         }
         else
         {
-            foreach (var s in used)
+            foreach (var use in used)
             {
-                Console.WriteLine(s);
+                Config.Update(use);
             }
         }
+
+        return used;
     }
 }

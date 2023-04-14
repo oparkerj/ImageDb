@@ -1,30 +1,42 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
 /// <summary>
 /// Remove an image from the database. This should be used to manually
-/// repair the image folder. This does not delete the image file.
+/// repair the image folder. This does move the image from the image folder.
 /// </summary>
-public class RemoveImage : ActionBase, IActionUsage
+public class RemoveImage : IAction
 {
     public static string Usage => "remove <file>";
-    
-    public RemoveImage(ArgReader args) : base(args) { }
 
-    public bool Execute(string file)
+    public ImageDbConfig Config { get; set; }
+
+    public static bool Execute(string file, ImageDbFileHandler db)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
         
-        var removed = Tree.Remove(TreePath(file));
-        if (removed) Console.WriteLine($"Removed file \"{file}\"");
-        else Console.WriteLine("File was not present in database.");
+        var removed = db.RemoveImage(file);
+
+        if (removed)
+        {
+            db.Config.Update($"Removed file \"{file}\"");
+        }
+        else
+        {
+            db.Config.Update("File was not present in database.");
+        }
 
         return removed;
     }
-    
-    public override void Execute() => Execute(GetArg(0));
+
+    public bool Execute(string file)
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        return Execute(file, db);
+    }
 }

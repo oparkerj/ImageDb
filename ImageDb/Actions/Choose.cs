@@ -1,4 +1,5 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
@@ -6,32 +7,31 @@ namespace ImageDb.Actions;
 /// Select an image from the database to mark as "used".
 /// Images marked as used will not be chosen again.
 /// </summary>
-public class Choose : ActionBase, IActionUsage
+public class Choose : IAction
 {
     public static string Usage => "choose";
-    
-    public Choose(ArgReader args) : base(args) { }
 
-    public string ExecuteGet()
+    public ImageDbConfig Config { get; set; }
+
+    public string Execute()
     {
-        var used = this.LoadUseFile();
-        used ??= new HashSet<string>();
-        
-        var chosen = Tree.Except(used).FirstOrDefault();
+        using var db = new ImageDbFileHandler {Config = Config};
+
+        var chosen = db.Tree.Except(db.Used).FirstOrDefault();
         if (chosen == null)
         {
-            Console.WriteLine("There are no unused images.");
+            Config.Update("There are no unused images.");
             return null;
         }
-        
-        used.Add(chosen);
-        Console.WriteLine("Updating use file...");
-        this.WriteUseFile(used);
-        Console.WriteLine("Chosen image:");
-        Console.WriteLine(chosen);
 
-        return Path.Join(ImageDirPath, chosen);
+        db.AddUsage(chosen);
+        // Save here, so any issue will come up in an exception
+        // before reporting a chosen image.
+        db.SaveUsage();
+        
+        Config.Update("Chosen image:");
+        Config.Update(chosen);
+
+        return Path.Join(Config.ImageFolderRelative, chosen);
     }
-    
-    public override void Execute() => ExecuteGet();
 }

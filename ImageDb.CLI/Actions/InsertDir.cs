@@ -1,7 +1,8 @@
-﻿using ImageDb.Common;
+﻿using ImageDb.Actions;
+using ImageDb.Common;
 using ImageDb.Data;
 
-namespace ImageDb.Actions;
+namespace ImageDb.CLI.Actions;
 
 /// <summary>
 /// This will first run a lookup on the file to find the most
@@ -9,31 +10,27 @@ namespace ImageDb.Actions;
 /// image. If the answer is yes, the image is added to the database,
 /// otherwise nothing happens.
 /// </summary>
-public class InsertDir : ActionBase, IActionUsage
+public class InsertDir : IAction
 {
     public static string Usage => "insertDir <dir> <autoAcceptTolerance> [autoDenyTolerance]";
-    
-    public InsertDir(ArgReader args) : base(args) { }
 
-    // Doesn't really make sense to call this one externally since it
-    // is based around asking for console confirmation before adding.
+    public ImageDbConfig Config { get; set; }
+
     public void Execute(string dir, int tolerance, int autoDeny = -1)
     {
         if (autoDeny >= tolerance)
         {
             throw new ArgumentException("Auto-deny must be less than tolerance.");
         }
-        
-        void Add(string file)
-        {
-            var moved = this.MoveFileToDir(file);
-            SafeAdd(moved);
-        }
-        
+
+        using var db = new ImageDbFileHandler {Config = Config};
+
         foreach (var file in Directory.GetFiles(dir).Order(new CountOrder()))
         {
             Console.WriteLine($"Checking: {file}");
-            var (path, difference) = Tree.LookupDistance(TreePath(file));
+            
+            var (path, difference) = db.Tree.LookupDistance(db.Config.RelativeToImageFolder(file));
+            
             if (difference <= autoDeny)
             {
                 Console.WriteLine($"Distance: {difference}");
@@ -42,7 +39,7 @@ public class InsertDir : ActionBase, IActionUsage
             else if (difference >= tolerance)
             {
                 Console.WriteLine($"Distance: {difference}");
-                Add(file);
+                AddImage.Execute(file, db);
             }
             else
             {
@@ -50,23 +47,8 @@ public class InsertDir : ActionBase, IActionUsage
                 Console.Write("Add file? (y/n): ");
                 var response = Console.ReadLine();
                 if (response != "y") continue;
-                Add(file);
+                AddImage.Execute(file, db);
             }
         }
-    }
-    
-    public override void Execute()
-    {
-        if (GetArg(0) is var dir && !Directory.Exists(dir))
-        {
-            throw new Exception($"Cannot find directory \"{dir}\"");
-        }
-        if (GetArg<int>(1) is var tolerance && tolerance < 0)
-        {
-            throw new Exception("Invalid tolerance level.");
-        }
-        var autoDeny = GetArgOrDefault(2, -1);
-        
-        Execute(dir, tolerance, autoDeny);
     }
 }

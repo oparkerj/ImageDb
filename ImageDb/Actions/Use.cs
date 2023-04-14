@@ -1,4 +1,5 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
@@ -7,44 +8,54 @@ namespace ImageDb.Actions;
 /// it will first be added, which will cause the file to be moved to the image
 /// folder.
 /// </summary>
-public class Use : ActionBase, IActionUsage
+public class Use : IAction
 {
     public static string Usage => "use <file>";
-    
-    public Use(ArgReader args) : base(args) { }
 
-    public static string NextFileName(string dir, string format)
-    {
-        var num = Directory.GetFiles(dir).Length;
-        return format.Replace("{num}", num.ToString());
-    }
+    public ImageDbConfig Config { get; set; }
 
-    public bool Execute(string file)
+    public static bool Execute(string file, ImageDbFileHandler db, bool autoAdd = true)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
+
+        // File path relative to image folder
+        var fileRelative = db.Config.RelativeToImageFolder(file);
         
-        if (!Tree.Contains(TreePath(file)))
+        if (!db.Tree.Contains(fileRelative))
         {
-            Console.WriteLine("Image is not indexed.");
-            file = this.MoveFileToDir(file);
-            SafeAdd(file);
+            db.Config.Update("Image is not indexed.");
+            if (autoAdd)
+            {
+                file = AddImage.Execute(file, db);
+                fileRelative = db.Config.RelativeToImageFolder(file);
+            }
+            else
+            {
+                db.Config.Update("Skipping...");
+                return false;
+            }
         }
 
-        var used = this.LoadUseFile();
-        used ??= new HashSet<string>();
-        
-        if (used.Add(TreePath(file)))
+        var success = db.AddUsage(fileRelative);
+
+        if (success)
         {
-            this.WriteUseFile(used);
-            Console.WriteLine("Marked file as used.");
-            return true;
+            db.Config.Update($"Marked \"{fileRelative}\" as used.");
         }
-        Console.WriteLine("File has already been used.");
-        return false;
+        else
+        {
+            db.Config.Update($"File \"{fileRelative}\" has already been used.");
+        }
+
+        return success;
     }
 
-    public override void Execute() => Execute(GetArg(0));
+    public bool Execute(string file)
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        return Execute(file, db);
+    }
 }

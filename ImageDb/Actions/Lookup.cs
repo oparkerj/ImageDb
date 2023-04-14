@@ -1,4 +1,5 @@
 ﻿using ImageDb.Common;
+using ImageDb.Data;
 
 namespace ImageDb.Actions;
 
@@ -7,54 +8,82 @@ namespace ImageDb.Actions;
 /// the hash value is within the given tolerance. If there are no
 /// images within the tolerance, the next closest image is reported.
 /// </summary>
-public class Lookup : ActionBase, IActionUsage
+public class Lookup : IAction
 {
     public static string Usage => "lookup <file> [tolerance]";
-    
-    public Lookup(ArgReader args) : base(args) { }
 
-    public List<string> FindRelative(string file, int tolerance = 0)
-    {
-        return Find(file, tolerance).RelativeFromImageDir(ImageDirPath);
-    }
+    public ImageDbConfig Config { get; set; }
 
-    public List<string> Find(string file, int tolerance = 0)
+    public static IEnumerable<string> Find(string file, int tolerance, ImageDbFileHandler db)
     {
         if (!File.Exists(file))
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
-
-        var similar = new List<string>();
-        foreach (var s in Tree.LookupAll(TreePath(file), tolerance))
+        
+        foreach (var similar in db.Tree.LookupAll(db.Config.RelativeToImageFolder(file), tolerance))
         {
-            Console.WriteLine(s);
-            similar.Add(s);
+            db.Config.Update(similar);
+            yield return similar;
         }
-
-        return similar;
     }
 
-    public void Execute(string file, int tolerance = 0)
+    public static IEnumerable<string> FindRelative(string file, int tolerance, ImageDbFileHandler db)
     {
-        var similarList = Find(file, tolerance);
-        Console.WriteLine($"Looking up similar entries with tolerance = {tolerance}:");
-        
-        if (similarList.Count > 0)
+        return Find(file, tolerance, db).FromRelativePaths(db.Config.ImageFolderRelative);
+    }
+
+    public static string FindOne(string file, int tolerance, ImageDbFileHandler db)
+    {
+        return Find(file, tolerance, db).FirstOrDefault();
+    }
+
+    public static string FindOneRelative(string file, int tolerance, ImageDbFileHandler db)
+    {
+        return FindRelative(file, tolerance, db).FirstOrDefault();
+    }
+
+    public static List<string> Execute(string file, int tolerance, bool fallbackClosest, ImageDbFileHandler db)
+    {
+        db.Config.Update($"Looking up similar entries with tolerance = {tolerance}:");
+        using var similar = Find(file, tolerance, db).GetEnumerator();
+
+        if (similar.MoveNext())
         {
-            foreach (var s in similarList)
+            // Enumerating calls Config.Update
+            var result = new List<string> {similar.Current};
+            while (similar.MoveNext())
             {
-                Console.WriteLine(s);
+                result.Add(similar.Current);
+            }
+            return result;
+        }
+        
+        if (fallbackClosest)
+        {
+            db.Config.Update("There were no images within the tolerance, searching for the closest match...");
+            var (result, distance) = db.Tree.LookupDistance(db.Config.RelativeToImageFolder(file));
+            if (result == null)
+            {
+                db.Config.Update("The tree is empty.");
+            }
+            else
+            {
+                db.Config.Update($"Distance: {distance}, {result}");
+                return new List<string>(1) {result};
             }
         }
         else
         {
-            Console.WriteLine("There were no images within the tolerance, searching for the closest match...");
-            var (result, distance) = Tree.LookupDistance(TreePath(file));
-            if (result == null) Console.WriteLine("The tree is empty.");
-            else Console.WriteLine($"Distance: {distance}, {result}");
+            db.Config.Update("There were no images within the tolerance.");
         }
+
+        return new List<string>(0);
     }
-    
-    public override void Execute() => Execute(GetArg(0), GetArgOrDefault<int>(1));
+
+    public List<string> Execute(string file, int tolerance = 0, bool fallbackClosest = true)
+    {
+        using var db = new ImageDbFileHandler {Config = Config};
+        return Execute(file, tolerance, fallbackClosest, db);
+    }
 }
