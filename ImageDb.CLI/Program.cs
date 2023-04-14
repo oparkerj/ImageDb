@@ -10,9 +10,9 @@ config.Status += Console.WriteLine;
 TryExecute();
 
 // Get all actions the program can execute.
-static Dictionary<string, ActionHandler> BuildActions()
+static Dictionary<string, IActionHandler> BuildActions()
 {
-    var actions = new Dictionary<string, ActionHandler>();
+    var actions = new Dictionary<string, IActionHandler>();
 
     Add<Init>((action, _) => action.Execute());
     Add<IndexDirectory>((action, reader) => action.Execute(reader[1]));
@@ -89,13 +89,13 @@ static ImageDbConfig LoadConfig(ArgReader reader)
 {
     var config = new ImageDbConfig();
 
-    if (reader.HasOption("config")) config.ConfigPath = reader.GetOption("config");
+    if (reader.TryGetArgValue("config", out var configPath)) config.ConfigPath = configPath;
     config.LoadConfigFile();
 
-    if (reader.HasOption("database")) config.Database = reader.GetOption("database");
-    if (reader.HasOption("folder")) config.ImageFolder = reader.GetOption("folder");
-    if (reader.HasOption("usefile")) config.UsageFile = reader.GetOption("usefile");
-    if (reader.HasOption("relativeBase")) config.RelativeBase = reader.GetOption("relativeBase");
+    if (reader.TryGetArgValue("database", out var databasePath)) config.Database = databasePath;
+    if (reader.TryGetArgValue("folder", out var folderPath)) config.ImageFolder = folderPath;
+    if (reader.TryGetArgValue("usefile", out var usagePath)) config.UsageFile = usagePath;
+    if (reader.TryGetArgValue("relativeBase", out var relativePath)) config.RelativeBase = relativePath;
     if (reader.HasOption("showjson")) config.ShowJson = true;
 
     return config;

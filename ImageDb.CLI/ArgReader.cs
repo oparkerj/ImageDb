@@ -56,7 +56,7 @@ public class ArgReader
     /// <param name="s">Option name.</param>
     /// <param name="value">Option value.</param>
     /// <returns>True if the option was found, false otherwise.</returns>
-    private bool TryGetArgValue(string s, out string value)
+    public bool TryGetArgValue(string s, out string value)
     {
         value = default;
         

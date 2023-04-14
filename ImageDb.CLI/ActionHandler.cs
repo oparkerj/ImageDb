@@ -2,12 +2,12 @@
 
 namespace ImageDb.CLI;
 
-public abstract class ActionHandler
+public interface IActionHandler
 {
-    public abstract void Execute(ImageDbConfig config, ArgReader args);
+    void Execute(ImageDbConfig config, ArgReader args);
 }
 
-public class ActionHandler<T> : ActionHandler
+public class ActionHandler<T> : IActionHandler
     where T : IAction, new()
 {
     public string Name { get; }
@@ -19,7 +19,7 @@ public class ActionHandler<T> : ActionHandler
         Action = action;
     }
 
-    public override void Execute(ImageDbConfig config, ArgReader args)
+    public void Execute(ImageDbConfig config, ArgReader args)
     {
         var instance = new T {Config = config};
         Action(instance, args);
