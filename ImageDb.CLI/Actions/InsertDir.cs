@@ -22,6 +22,10 @@ public class InsertDir : IAction
         {
             throw new ArgumentException("Auto-deny must be less than tolerance.");
         }
+        if (!Directory.Exists(dir))
+        {
+            throw new ArgumentException("Directory doesn't exist.");
+        }
 
         using var db = new ImageDbFileHandler {Config = Config};
 

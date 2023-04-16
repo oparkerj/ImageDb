@@ -94,6 +94,14 @@ public class ImageDbConfig
     /// <param name="path">File path</param>
     /// <returns>Path relative to image folder</returns>
     public string RelativeToImageFolder(string path) => Path.GetRelativePath(ImageFolderRelative, path);
+    
+    /// <summary>
+    /// Convert a path which is relative to the image folder back
+    /// into a normal path.
+    /// </summary>
+    /// <param name="path">Relative path</param>
+    /// <returns>File path</returns>
+    public string RevertRelativeToImageFolder(string path) => Path.Join(ImageFolderRelative, path);
 
     /// <summary>
     /// Load a config file into the current instance.
