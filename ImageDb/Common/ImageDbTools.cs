@@ -12,7 +12,7 @@ public static class ImageDbTools
     /// <param name="dir">Directory to search.</param>
     /// <param name="format">File name format string.</param>
     /// <returns>Path to next file, or null if one could not be found.</returns>
-    public static string NextFile(string dir, string format)
+    public static string NextFileNum(string dir, string format)
     {
         string GetFileName(int num) => format.Replace("{num}", num.ToString());
         
@@ -25,11 +25,27 @@ public static class ImageDbTools
     }
 
     /// <summary>
+    /// Get the path to the next file to be created in the configured image folder.
+    /// "{ext}" in the name format will be replaced with the extension.
+    /// "{num}" in the name format will be replaced with a unique number.
+    /// The number is not guaranteed to be sequential.
+    /// </summary>
+    /// <param name="ext">Extension including the dot.</param>
+    /// <param name="config">Configuration to use to get image folder path and name format.</param>
+    /// <returns>Path to available file.</returns>
+    public static string NextFile(string ext, ImageDbConfig config)
+    {
+        var dir = config.ImageFolderRelative;
+        var name = config.NameFormat.Replace("{ext}", ext);
+        return NextFileNum(dir, name);
+    }
+
+    /// <summary>
     /// Move the given file to the configured image folder.
     /// The file will be renamed according to the configured file name format.
     /// The text "{ext}" in the file format will be replaced with the file extension
     /// of the first parameter.
-    /// <seealso cref="NextFile"/>
+    /// <seealso cref="NextFileNum"/>
     /// </summary>
     /// <param name="file">File path.</param>
     /// <param name="config">Configuration to use to get the image folder path
@@ -37,10 +53,8 @@ public static class ImageDbTools
     /// <returns>Path to the moved and renamed file.</returns>
     public static string MoveFileToImageDir(string file, ImageDbConfig config)
     {
-        var dir = config.ImageFolderRelative;
         var ext = Path.GetExtension(file);
-        var name = config.NameFormat.Replace("{ext}", ext);
-        var dest = NextFile(dir, name);
+        var dest = NextFile(ext, config);
         File.Move(file, dest);
         config.Update($"Moved file to \"{DirectoryString(dest)}\"");
         return dest;
