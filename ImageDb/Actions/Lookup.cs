@@ -43,6 +43,28 @@ public class Lookup : IAction
         return FindRelative(file, tolerance, db).FirstOrDefault();
     }
 
+    public static (string Path, int Distance) FindClosest(string file, ImageDbFileHandler db)
+    {
+        if (!File.Exists(file))
+        {
+            throw new ArgumentException($"File doesn't exist \"{file}\"");
+        }
+
+        return db.Tree.LookupDistance(db.Config.RelativeToImageFolder(file));
+    }
+
+    public static LookupResult FindClosestResult(string file, ImageDbFileHandler db)
+    {
+        var (path, distance) = FindClosest(file, db);
+        return new LookupResult(path, distance) {Config = db.Config};
+    }
+    
+    public static LookupResult FindClosestResult(long hash, ImageDbFileHandler db)
+    {
+        var (path, distance) = db.Tree.LookupDistance(hash);
+        return new LookupResult(path, distance) {Config = db.Config};
+    }
+
     public static List<string> Execute(string file, int tolerance, bool fallbackClosest, ImageDbFileHandler db)
     {
         db.Config.Update($"Looking up similar entries with tolerance = {tolerance}:");
@@ -86,4 +108,9 @@ public class Lookup : IAction
         using var db = new ImageDbFileHandler {Config = Config};
         return Execute(file, tolerance, fallbackClosest, db);
     }
+}
+
+public record LookupResult(string DbPath, int Distance)
+{
+    public required ImageDbConfig Config { get; init; }
 }

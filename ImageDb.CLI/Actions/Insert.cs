@@ -20,12 +20,12 @@ public class Insert : IAction
     {
         using var db = new ImageDbFileHandler {Config = Config};
 
-        Lookup.Execute(file, 0, true, db);
-        
+        var result = InsertFile.Execute(file, db);
+
         Console.Write("Add file? (y/n): ");
         var response = Console.ReadLine();
         if (response != "y") return;
 
-        AddImage.Execute(file, db);
+        result.Accept(db);
     }
 }
