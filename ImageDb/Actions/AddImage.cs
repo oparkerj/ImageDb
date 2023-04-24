@@ -20,6 +20,8 @@ public class AddImage : IAction
         {
             throw new ArgumentException($"File doesn't exist \"{file}\"");
         }
+        
+        db.Config.Update($"Adding: {ImageDbTools.DirectoryString(file)}");
 
         var moved = ImageDbTools.MoveFileToImageDir(file, db.Config);
         var success = db.TryAddImage(moved);
