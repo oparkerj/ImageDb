@@ -244,7 +244,7 @@ public class FileBkTree : IEnumerable<string>
     /// </summary>
     /// <param name="hash">File hash</param>
     /// <returns>File path and hash distance, or null and 0 if the tree is empty.</returns>
-    private (string Path, int Difference) LookupDistance(long hash)
+    public (string Path, int Difference) LookupDistance(long hash)
     {
         var result = LookupInternal(hash);
         if (result.Node == null) return (null, 0);
