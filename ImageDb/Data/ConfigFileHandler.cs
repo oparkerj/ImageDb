@@ -37,7 +37,7 @@ public class ConfigFileHandler
     /// <typeparam name="T">Object type.</typeparam>
     public void WriteGZipped<T>(T obj, string path, bool includeUncompressed = false)
     {
-        using var file = File.OpenWrite(path);
+        using var file = File.Open(path, FileMode.Create);
         using var gzip = new GZipStream(file, CompressionLevel.Optimal);
         using var writer = new StreamWriter(gzip);
         _serializer.Formatting = Formatting.None;
@@ -87,7 +87,7 @@ public class ConfigFileHandler
     /// <typeparam name="T">Object type.</typeparam>
     public void WriteJson<T>(T obj, string path)
     {
-        using var file = File.OpenWrite(path);
+        using var file = File.Open(path, FileMode.Create);
         using var writer = new StreamWriter(file);
         _serializer.Formatting = Formatting.Indented;
         _serializer.Serialize(writer, obj);
