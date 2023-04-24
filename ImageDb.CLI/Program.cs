@@ -27,6 +27,7 @@ static Dictionary<string, IActionHandler> BuildActions()
     Add<ShowUsed>((action, _) => action.Execute());
     Add<Insert>((action, reader) => action.Execute(reader[1]));
     Add<InsertDir>((action, reader) => action.Execute(reader[1], reader.Get<int>(2), reader.GetOrDefault(3, -1)));
+    Add<Backup>((action, reader) => action.Execute(reader[1]));
 
     return actions;
 
