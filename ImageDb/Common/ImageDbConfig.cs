@@ -56,7 +56,7 @@ public class ImageDbConfig
     /// <summary>
     /// Format of file names in the image folder.
     /// </summary>
-    public string NameFormat { get; set; } = "image{num}{ext}";
+    public string NameFormat { get; set; } = "image{num}";
 
     /// <summary>
     /// Base folder for relative paths. Null for current directory.

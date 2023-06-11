@@ -10,18 +10,23 @@ public static class ImageDbTools
     /// guaranteed to be a specific value.
     /// </summary>
     /// <param name="dir">Directory to search.</param>
+    /// <param name="ext">File extension including "."</param>
     /// <param name="format">File name format string.</param>
     /// <returns>Path to next file, or null if one could not be found.</returns>
-    public static string NextFileNum(string dir, string format)
+    public static string NextFilePath(string dir, string ext, string format)
     {
         string GetFileName(int num) => format.Replace("{num}", num.ToString());
-        
-        var num = Directory.GetFiles(dir).Length;
-        return Enumerable.Range(1, num)
+
+        var fileNames = Directory.GetFiles(dir)
+            .Select(Path.GetFileNameWithoutExtension)
+            .ToHashSet();
+
+        var name = Enumerable.Range(1, fileNames.Count)
             .Select(GetFileName)
-            .Prepend(GetFileName(num + 1))
-            .Select(s => Path.Combine(dir, s))
-            .FirstOrDefault(s => !File.Exists(s));
+            .Prepend(GetFileName(fileNames.Count + 1))
+            .FirstOrDefault(name => !fileNames.Contains(name));
+
+        return Path.Combine(dir, Path.ChangeExtension(name!, ext));
     }
 
     /// <summary>
@@ -35,9 +40,7 @@ public static class ImageDbTools
     /// <returns>Path to available file.</returns>
     public static string NextFile(string ext, ImageDbConfig config)
     {
-        var dir = config.ImageFolderRelative;
-        var name = config.NameFormat.Replace("{ext}", ext);
-        return NextFileNum(dir, name);
+        return NextFilePath(config.ImageFolderRelative, ext, config.NameFormat);
     }
 
     /// <summary>
@@ -45,7 +48,7 @@ public static class ImageDbTools
     /// The file will be renamed according to the configured file name format.
     /// The text "{ext}" in the file format will be replaced with the file extension
     /// of the first parameter.
-    /// <seealso cref="NextFileNum"/>
+    /// <seealso cref="NextFilePath"/>
     /// </summary>
     /// <param name="file">File path.</param>
     /// <param name="config">Configuration to use to get the image folder path
