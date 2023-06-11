@@ -34,8 +34,9 @@ static Dictionary<string, IActionHandler> BuildActions()
     void Add<T>(Action<T, ArgReader> action)
         where T : IAction, new()
     {
-        var name = T.Usage.IndexOf(' ') is var index && index >= 0 ? T.Usage[..index] : T.Usage;
-        actions[name] = new ActionHandler<T>(name, action);
+        var usage = T.Usage;
+        var name = usage.IndexOf(' ') is var index && index >= 0 ? usage[..index] : usage;
+        actions[name] = new ActionHandler<T>(name, action) {Usage = usage};
     }
 }
 
@@ -105,7 +106,8 @@ static ImageDbConfig LoadConfig(ArgReader reader)
 // Print out the usages for the available actions.
 void PrintOptions(bool allowManage)
 {
-    Console.WriteLine($"Options:{Environment.NewLine}" +
-                      $"{string.Join(Environment.NewLine, actions.Keys)}{Environment.NewLine}" +
-                      $"{(allowManage ? "manage" : "exit")}");
+    var info = actions.Select(pair => pair.Value is IActionInfo info ? (info.Usage ?? info.Name) : pair.Key);
+    Console.WriteLine("Options:");
+    Console.WriteLine(string.Join(Environment.NewLine, info));
+    Console.WriteLine(allowManage ? "manage" : "exit");
 }
